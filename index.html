@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>迷霧夜行：誘惑何時找上你？</title>
+<style>
+@font-face{font-family:"Oradano";src:url("fonts/oradano.woff") format("woff");font-display:swap}
+@font-face{font-family:"GenKiMin";src:url("fonts/genkimin.woff") format("woff");font-display:swap}
+@font-face{font-family:"NotoTC";src:url("fonts/notosanstc-regular.woff") format("woff");font-weight:400;font-display:swap}
+@font-face{font-family:"NotoTC";src:url("fonts/notosanstc-medium.woff") format("woff");font-weight:500 700;font-display:swap}
+@font-face{font-family:"InterW";src:url("fonts/inter-regular.woff") format("woff");font-weight:400;font-display:swap}
+@font-face{font-family:"InterW";src:url("fonts/inter-light.woff") format("woff");font-weight:300;font-display:swap}
+:root{
+  --bg:#05060f;--navy:#0b1030;--indigo:#2a2a7a;--ultra:#3b4cc9;--violet:#7a6bd6;
+  --mist:#c9cdf5;--text:#e9eafc;--muted:#9aa0cf;--orange:#f2a65a;--line:rgba(201,205,245,.18);
+  --serif:"GenKiMin","Noto Serif TC","Songti TC",serif;
+  --display:"Oradano","GenKiMin","Songti TC",serif;
+  --sans:"InterW","NotoTC","PingFang TC","Microsoft JhengHei",sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font-family:var(--sans);-webkit-font-smoothing:antialiased}
+body{overflow:hidden}
+button{font-family:inherit}
+.grain{position:fixed;inset:0;pointer-events:none;z-index:50;opacity:.12;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
+.stars{position:fixed;inset:0;z-index:0;pointer-events:none}
+/* screens */
+.screen{position:fixed;inset:0;z-index:5;display:none;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.screen.on{display:block;animation:fadein .7s ease both}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+.wrap{max-width:1080px;margin:0 auto;padding:clamp(24px,5vw,56px) clamp(20px,5vw,48px) 64px;min-height:100%;display:flex;flex-direction:column;justify-content:center}
+.narrow{max-width:620px}
+h1,h2,h3,.serif{font-family:var(--serif);font-weight:400;letter-spacing:.04em}
+h1{font-family:var(--display);font-size:clamp(34px,6vw,64px);line-height:1.2;margin:0 0 12px}
+.covertext .sub,.kicker.disp{font-family:var(--display)}
+h2{font-size:clamp(24px,3.6vw,34px);line-height:1.4;margin:0 0 16px}
+h3{font-size:20px;margin:0 0 8px}
+p{line-height:1.85;margin:0 0 14px;color:var(--text)}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.kicker{font-size:12px;letter-spacing:.3em;color:var(--muted);margin-bottom:14px;font-family:var(--sans)}
+.btn{appearance:none;border:1px solid var(--mist);background:rgba(201,205,245,.08);color:var(--text);
+  padding:14px 28px;font-size:16px;letter-spacing:.12em;cursor:pointer;transition:.25s;border-radius:2px}
+.btn:hover,.btn:focus-visible{background:rgba(201,205,245,.2);outline:none;box-shadow:0 0 24px rgba(122,107,214,.5)}
+.btn:disabled{opacity:.3;cursor:default;box-shadow:none}
+.btn.ghost{border-color:var(--line);color:var(--muted)}
+.btn.warm{border-color:var(--orange);color:#ffe2c4}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+/* cover */
+#cover{background:#05060f}
+.coverimg{position:fixed;inset:0;background:center/cover no-repeat url("img/cover_desktop.webp")}
+@media (max-aspect-ratio:1/1){.coverimg{background-image:url("img/cover_mobile.webp")}}
+.coverimg::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(5,6,15,.1) 30%,rgba(5,6,15,.75) 75%)}
+@media (max-aspect-ratio:1/1){.coverimg::after{background:linear-gradient(180deg,rgba(5,6,15,.75) 0%,rgba(5,6,15,.2) 45%,rgba(5,6,15,.6) 100%)}}
+.covertext{position:relative;z-index:2;min-height:100%;display:flex;flex-direction:column;justify-content:center;align-items:flex-end;text-align:right;padding:0 clamp(24px,7vw,96px)}
+@media (max-aspect-ratio:1/1){.covertext{justify-content:flex-start;align-items:center;text-align:center;padding-top:12vh}}
+.covertext .sub{font-family:var(--serif);font-size:clamp(20px,3vw,30px);color:var(--mist);margin-bottom:36px}
+/* choice cards */
+.choices{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin:18px 0 26px}
+.choice{border:1px solid var(--line);background:rgba(11,16,48,.55);color:var(--text);padding:16px 14px;text-align:left;cursor:pointer;font-size:15px;line-height:1.5;border-radius:2px;transition:.2s}
+.choice:hover,.choice:focus-visible{border-color:var(--mist);outline:none}
+.choice.sel{border-color:var(--orange);background:rgba(242,166,90,.12)}
+/* notice */
+.panel{border:1px solid var(--line);background:rgba(11,16,48,.6);padding:clamp(20px,4vw,36px);backdrop-filter:blur(6px)}
+.panel ul{padding-left:20px;margin:0 0 16px}.panel li{line-height:1.9}
+.badge{display:inline-block;border:1px solid var(--orange);color:#ffd2a6;font-size:12px;padding:3px 10px;letter-spacing:.1em;margin-bottom:14px}
+/* sliders */
+.slider{margin:22px 0 8px}
+.slider label{display:block;margin-bottom:10px;line-height:1.6}
+.slider .ends{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-top:6px}
+.srow{display:flex;align-items:center;gap:16px}
+.sval{font-family:"InterW",sans-serif;font-weight:300;font-size:34px;min-width:2.2ch;text-align:right;color:var(--mist)}
+.sval.empty{color:var(--line)}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:28px;background:transparent;cursor:pointer;touch-action:pan-x}
+input[type=range]::-webkit-slider-runnable-track{height:2px;background:linear-gradient(90deg,var(--indigo),var(--violet),var(--orange))}
+input[type=range]::-moz-range-track{height:2px;background:linear-gradient(90deg,var(--indigo),var(--violet),var(--orange))}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;margin-top:-10px;border-radius:50%;background:#fff;box-shadow:0 0 16px 4px rgba(201,205,245,.7)}
+input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radius:50%;background:#fff;box-shadow:0 0 16px 4px rgba(201,205,245,.7)}
+input[type=range].untouched::-webkit-slider-thumb{background:transparent;box-shadow:0 0 0 1px var(--muted)}
+input[type=range].untouched::-moz-range-thumb{background:transparent;box-shadow:0 0 0 1px var(--muted)}
+input[type=range]:focus-visible{outline:1px dashed var(--mist);outline-offset:4px}
+/* journey */
+#journey{overflow:hidden}
+.scene{position:absolute;inset:0;display:grid;grid-template-columns:minmax(0,42%) minmax(0,1fr);gap:clamp(24px,5vw,72px);align-items:center;
+  max-width:1180px;margin:0 auto;padding:clamp(20px,4vw,48px) clamp(20px,5vw,56px) 96px}
+.scene .pic{height:min(78vh,720px);aspect-ratio:2/3;max-width:100%;justify-self:end;background:center/cover no-repeat;
+  box-shadow:0 0 80px rgba(59,76,201,.35);border:1px solid var(--line)}
+.scene .q{max-width:560px}
+.qnum{font-family:"InterW",sans-serif;font-weight:300;color:var(--muted);letter-spacing:.2em;font-size:13px;margin-bottom:14px}
+.qtext{font-family:var(--serif);font-size:clamp(21px,2.5vw,28px);line-height:1.75;margin:0 0 26px}
+.qask{color:var(--mist);margin-bottom:4px}
+@media (max-width:760px){
+  .scene{grid-template-columns:1fr;grid-template-rows:auto 1fr;align-items:start;padding-top:14px;gap:14px;overflow-y:auto}
+  .scene .pic{height:38vh;justify-self:center;width:auto}
+  .qtext{font-size:19px;margin-bottom:12px}
+}
+.scene.trial .pic{background:radial-gradient(circle at 50% 45%,rgba(201,205,245,.35),transparent 60%),var(--navy)}
+.navbar{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;justify-content:center;gap:16px;align-items:center;
+  padding:14px 16px calc(14px + env(safe-area-inset-bottom));background:linear-gradient(0deg,rgba(5,6,15,.92),rgba(5,6,15,0))}
+.hint{font-size:12px;color:var(--muted);letter-spacing:.15em}
+.navbar .btn{white-space:nowrap}
+@media (max-width:520px){.navbar .hint{display:none}.navbar{justify-content:space-between}.navbar .btn{padding:12px 20px;font-size:15px}}
+.progress{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,var(--ultra),var(--orange));z-index:30;transition:width .6s}
+/* mist */
+/* 霧：透明度漸漸升高、佔滿整個畫面，再漸漸變淡顯現下一題 */
+.mist{position:fixed;inset:0;z-index:15;pointer-events:none;opacity:0;transition:opacity .85s ease-in-out;
+  background:radial-gradient(ellipse at 50% 55%,#3a3f8f 0%,#1b1f55 55%,#0b0e2c 100%)}
+.mist .fog{position:absolute;inset:-15%;background:center/cover no-repeat url("img/mist.webp");opacity:.9}
+.mist .fog.b{transform:scaleX(-1) scale(1.15);opacity:.7}
+.mist.closed{opacity:1}
+.mist.closed .fog.a{animation:drift 6s ease-in-out infinite alternate}
+.mist.closed .fog.b{animation:drift2 7s ease-in-out infinite alternate}
+.mist.open{opacity:0}
+@keyframes drift{from{transform:translateX(-3%) scale(1.05)}to{transform:translateX(3%) scale(1.12)}}
+@keyframes drift2{from{transform:scaleX(-1) translateX(-2%) scale(1.15)}to{transform:scaleX(-1) translateX(4%) scale(1.08)}}
+@media (prefers-reduced-motion:reduce){
+  .mist .fog{animation:none!important}
+  .screen.on{animation:none}
+}
+/* result */
+.typehead{display:grid;grid-template-columns:minmax(0,320px) minmax(0,1fr);gap:clamp(20px,4vw,48px);align-items:center;margin-bottom:36px}
+.typehead .pic{aspect-ratio:2/3;background:center/cover no-repeat;border:1px solid var(--line);box-shadow:0 0 80px rgba(122,107,214,.35)}
+@media (max-width:760px){.typehead{grid-template-columns:1fr}.typehead .pic{max-width:240px;margin:0 auto}}
+.typename{font-size:clamp(34px,5vw,52px);margin:0 0 8px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;margin:20px 0}
+.section{margin:44px 0}
+.section>h2{border-bottom:1px solid var(--line);padding-bottom:10px}
+.cmp{display:grid;grid-template-columns:auto 1fr auto;gap:8px 14px;align-items:center;font-size:14px}
+.bar{height:6px;background:rgba(201,205,245,.1);position:relative}
+.bar i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,var(--ultra),var(--violet))}
+.bar.warm i{background:linear-gradient(90deg,var(--violet),var(--orange))}
+.num{font-family:"InterW",sans-serif;font-weight:300}
+.tips li{margin-bottom:8px;line-height:1.8}
+details{border:1px solid var(--line);padding:14px 18px;margin:12px 0;background:rgba(11,16,48,.45)}
+summary{cursor:pointer;color:var(--mist)}
+table{border-collapse:collapse;width:100%;font-size:14px;margin-top:10px}
+td,th{border-bottom:1px solid var(--line);padding:8px 6px;text-align:left}
+.card{border:1px solid var(--line);padding:20px;background:rgba(11,16,48,.5)}
+.card .big{font-family:"InterW",sans-serif;font-weight:300;font-size:40px;color:var(--mist);line-height:1.1;margin-bottom:6px}
+.help{border-color:var(--orange)}
+footer{margin-top:40px;padding-top:20px;border-top:1px solid var(--line);font-size:12px;color:var(--muted);line-height:1.8}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+</style>
+</head>
+<body>
+<canvas class="stars" id="stars" aria-hidden="true"></canvas>
+<div class="grain" aria-hidden="true"></div>
+<div class="progress" id="progress" style="width:0"></div>
+<div class="mist" id="mist" aria-hidden="true"><div class="fog a"></div><div class="fog b"></div></div>
+
+<!-- 0 cover -->
+<section class="screen on" id="cover" aria-label="封面">
+  <div class="coverimg"></div>
+  <div class="covertext">
+    <div class="kicker">A NIGHT WALK THROUGH THE MIST</div>
+    <h1>迷霧夜行</h1>
+    <div class="sub">誘惑何時找上你？</div>
+    <button class="btn" data-go="notice">進入迷霧</button>
+  </div>
+</section>
+
+<!-- 1 notice -->
+<section class="screen" id="notice" aria-label="開始前的說明">
+  <div class="wrap narrow">
+    <div class="panel">
+      <h2>進入迷霧之前</h2>
+      <div id="noticeBody"></div>
+      <div class="row" style="margin-top:22px">
+        <button class="btn" id="agreeBtn">我了解，開始</button>
+        <button class="btn ghost" id="noSendBtn">只看結果，不送出</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 2 age -->
+<section class="screen" id="age" aria-label="年齡">
+  <div class="wrap narrow">
+    <div class="kicker">01 / 出發前</div>
+    <h2>你的年齡是？</h2>
+    <div class="choices" id="ageChoices" role="group" aria-label="年齡區間"></div>
+  </div>
+</section>
+
+<!-- 3 topic -->
+<section class="screen" id="topic" aria-label="選擇題材">
+  <div class="wrap narrow">
+    <div class="kicker">02 / 出發前</div>
+    <h2>每個人都有一件「明知道不太好，但就是停不下來」的事。</h2>
+    <p class="muted">選一個最像你的。</p>
+    <div class="choices" id="topicChoices" role="group" aria-label="題材"></div>
+  </div>
+</section>
+
+<!-- 4 drug extra -->
+<section class="screen" id="drugextra" aria-label="補充問題">
+  <div class="wrap narrow">
+    <div class="kicker">03 / 出發前・可以跳過</div>
+    <h2>你曾經試著停下來過嗎？</h2>
+    <div class="choices" id="stopChoices" role="group" aria-label="是否曾經停過"></div>
+    <h2 style="margin-top:20px">最近一次大約多久以前？</h2>
+    <div class="choices" id="lastChoices" role="group" aria-label="最近一次使用"></div>
+    <div class="row"><button class="btn" data-go="pre">繼續</button><button class="btn ghost" id="skipExtra">跳過</button></div>
+  </div>
+</section>
+
+<!-- 5 pre sliders -->
+<section class="screen" id="pre" aria-label="出發前的自我判斷">
+  <div class="wrap narrow">
+    <div class="kicker">04 / 出發前</div>
+    <h2>回想過去一年，你每<span class="v-do"></span> 10 次，大概有幾次是在……</h2>
+    <div id="preSliders"></div>
+    <p class="small muted">兩條拉桿各自獨立，加起來不必等於 10。</p>
+    <div class="row" style="margin-top:12px"><button class="btn" id="preNext" disabled>走進迷霧</button></div>
+  </div>
+</section>
+
+<!-- 6 journey -->
+<section class="screen" id="journey" aria-label="迷霧中的情境題">
+  <div id="sceneHost"></div>
+  <div class="navbar">
+    <button class="btn ghost" id="backBtn" aria-label="回到上一題修改答案">上一題</button>
+    <span class="hint" id="journeyHint">拉動拉桿作答</span>
+    <button class="btn" id="fwdBtn" disabled>繼續前進</button>
+  </div>
+</section>
+
+<!-- 7 post -->
+<section class="screen" id="post" aria-label="走出迷霧前">
+  <div class="wrap narrow">
+    <div class="kicker">走出迷霧前</div>
+    <h2>再回想一次：過去一年，你每<span class="v-do"></span> 10 次，大概有幾次是在……</h2>
+    <div id="postSliders"></div>
+    <h3 style="margin-top:28px">你是怎麼決定這些答案的？</h3>
+    <div class="choices" id="howChoices" role="group" aria-label="作答依據"></div>
+    <div class="row"><button class="btn ghost" id="postBack">回到上一題</button><button class="btn warm" id="revealBtn" disabled>看見霧裡的自己</button></div>
+  </div>
+</section>
+
+<!-- 8 result -->
+<section class="screen" id="result" aria-label="結果">
+  <div class="wrap" id="resultBody"></div>
+</section>
+
+<script>
+/* ======= 設定 ======= */
+// 之後放到自己的主機時，把收集資料的網址填在這裡。留空 = 展示版，不送出任何資料。
+const SUBMIT_URL = '';
+
+/* ======= 題材 ======= */
+// 每種習慣在不同句型裡的口語說法（做法 A：情境不變，只換說法）
+// base：忍著沒＿／以前習慣＿的時間　want：想＿的程度　bit：只＿就停
+// recall：讓你想起＿　together：一起＿　crowd：大家都在＿
+const TOPICS = [
+  {id:'alcohol', label:'喝酒',            vdo:'喝酒',     base:'喝酒',   want:'喝一杯',     bit:'喝一點',     recall:'喝酒',   together:'喝一杯',       crowd:'喝'},
+  {id:'smoke',   label:'抽菸／電子菸',    vdo:'抽菸',     base:'抽菸',   want:'抽一根',     bit:'抽一兩口',   recall:'抽菸',   together:'抽一根',       crowd:'抽'},
+  {id:'snack',   label:'深夜吃東西',      vdo:'吃宵夜',   base:'吃宵夜', want:'吃宵夜',     bit:'吃幾口',     recall:'宵夜',   together:'去吃宵夜',     crowd:'吃'},
+  {id:'phone',   label:'滑手機（社群、短影音）',  vdo:'滑手機',   base:'滑手機', want:'滑手機',     bit:'滑一下',     recall:'滑手機', together:'開一局',     crowd:'低頭滑手機'},
+  {id:'game',    label:'打電動',          vdo:'打電動',   base:'打電動', want:'打一場',     bit:'打一場',     recall:'打電動', together:'打一場',       crowd:'打'},
+  {id:'shop',    label:'衝動購物',        vdo:'衝動購物', base:'亂買東西', want:'買點東西', bit:'買一樣',     recall:'購物',   together:'去逛逛、買點東西', crowd:'下單'},
+  {id:'drug',    label:'某些藥物（包含非法的）', vdo:'用', base:'用藥',  want:'用一點',     bit:'用一點',     recall:'用藥',   together:'用一點',       crowd:'用'},
+  {id:'other',   label:'其他',            vdo:'做那件事', base:'碰那件事', want:'做那件事', bit:'碰一下',     recall:'那件事', together:'做那件事',     crowd:'做那件事'}
+];
+// 少數情境換成這個題材比較自然的場景，情境類別不變
+// 依習慣換成符合它實際場景的版本（情境類別不變）
+// 原則：滑手機＝自己滑（社群、短影音）；打電動＝常和朋友一起；購物＝多半是網購；生活中看到有關的事物＝到了那個時間或地點就直接想要；
+//       內心想要嘗試的時候＝自己的念頭；社交壓力＝自然的邀約、不嘲諷；藥物的社交題＝現場的人也在用
+const VARIANT = {
+  alcohol:{
+    '4A':'你最近一直忍著沒喝酒，下班經過便利商店，心裡冒出一個念頭：「這陣子都很節制，今天喝一罐應該沒關係。」',
+    '4B':'朋友聚餐點了酒，你心想：「我已經控制得很好了，只喝一杯應該能停。」',
+    '5A':'你經過以前常去喝酒的那家店，回過神來，腳已經不自覺地往門口走。',
+    '5B':'週五晚上，到了以前習慣喝酒的時間，突然很想來一杯。',
+    '2B':'最近身體一直痠痛，晚上躺著怎麼樣都不舒服。',
+    '7A':'聚餐時朋友一直幫你倒酒：「一杯就好，難得出來嘛。」',
+    '7B':'聚會上大家都在喝，只有你沒有，有人問你：「今天不喝嗎？」'},
+  smoke:{
+    '4A':'你已經一陣子沒抽菸，今天工作告一段落，心裡冒出一個念頭：「這陣子都很節制，抽一根應該沒關係。」',
+    '4B':'同事下樓抽菸，你心想：「我已經戒得差不多了，抽一兩口應該沒關係。」',
+    '5A':'你看到有人點菸、聞到那個味道，手已經不自覺地摸向口袋。',
+    '5B':'吃完飯，到了以前習慣抽菸的時候，突然很想來一根。',
+    '7A':'朋友下樓抽菸，遞一根給你：「一起下去吧，順便聊聊。」',
+    '7B':'休息時間大家都下樓抽菸，有人問你：「不一起下來嗎？」',
+    '8B':'跟好久不見的老朋友聚會，聊得很開心，大家都拿出菸來。'},
+  snack:{
+    '4A':'你最近一直忍著沒吃宵夜，半夜經過還亮著的鹹酥雞攤，心裡冒出一個念頭：「這陣子都很節制，今天吃一次應該沒關係。」',
+    '4B':'深夜肚子有點餓，你心想：「我已經控制得很好了，只吃幾口應該能停。」',
+    '5A':'你經過常去的宵夜攤，聞到香味，腳步已經不自覺地停下來。',
+    '5B':'晚上十一點，到了以前習慣吃宵夜的時間，突然很想吃點東西。',
+    '7A':'朋友半夜揪你：「一起去吃鹹酥雞啦，難得大家都在。」',
+    '7B':'大家吃完飯還要續攤吃宵夜，有人問你：「你不一起來嗎？」',
+    // 聚會當下本來就會吃東西，所以把時間點放在散場之後
+    '8A':'週五晚上，剛領到薪水，跟朋友在熱鬧的聚會玩到深夜，散場時大家都還很嗨。',
+    '8B':'跟好久不見的老朋友聚會，聊到很晚，大家都捨不得走。'},
+  phone:{
+    '1A':'一個人躺在家，覺得什麼事都做不好，傳出去的訊息一整天都沒人回。',
+    '1B':'工作或課業上被罵了，回到家躺在床上，越想越難過。',
+    '2A':'已經連續三天睡不好，頭很痛，躺在床上怎麼樣都睡不著。',
+    '2B':'生病請假在家，躺在床上什麼事都做不了。',
+    '3A':'今天事情特別順利，收到好消息，回到家想好好犒賞自己一下。',
+    '3B':'終於完成一件很重要的事，回到家只想躺著好好放鬆。',
+    '4A':'你最近一直忍著不熬夜滑手機，今天終於放假，心裡冒出一個念頭：「這陣子都很節制，今晚滑晚一點應該沒關係。」',
+    '4B':'睡前躺在床上，你心想：「我已經控制得很好了，滑十分鐘就睡。」',
+    '5A':'搭捷運時，看到旁邊的人一直在滑短影音。',
+    '5B':'晚上一躺上床，就很想拿起手機。',
+    '6A':'跟家人或伴侶大吵一架，你把自己關進房間，躺在床上。',
+    '7A':'朋友在群組丟了一支影片：「快看！超好笑」，大家都在回。',
+    '7B':'聚餐時大家都拿出手機在滑，有人把手機遞過來：「你看這個。」',
+    '8A':'週五晚上跟朋友聚會，大家輪流分享手機裡好笑的影片，玩得很嗨。',
+    '8B':'跟好久不見的老朋友聚會，聊得很開心，大家拿出手機互相追蹤、看彼此的近況。'},
+  game:{
+    '1A':'一個人在家，覺得什麼事都做不好，傳出去的訊息一整天都沒人回。',
+    '1B':'工作或課業上被罵了，回到家越想越難過。',
+    '2A':'已經連續三天睡不好，頭很痛，怎麼樣都睡不著。',
+    '2B':'生病請假在家，躺著什麼事都做不了。',
+    '3A':'今天事情特別順利，收到好消息，回到家想好好犒賞自己一下。',
+    '3B':'終於完成一件很重要的事，想好好放鬆一下。',
+    '4A':'你最近一直忍著沒打電動，今天終於放假，心裡冒出一個念頭：「這陣子都很節制，今天打一整晚應該沒關係。」',
+    '4B':'睡前你心想：「我已經控制得很好了，只打一場就睡。」',
+    '5A':'搭捷運時，看到旁邊的陌生人在玩你常玩的那款遊戲。',
+    '5B':'晚上九點，到了以前習慣上線的時間，突然很想開一場。',
+    '6A':'跟家人或伴侶大吵一架，你把自己關進房間。',
+    '7A':'朋友揪你一起連線打遊戲：「少你一個不行，打一場就好。」',
+    '7B':'朋友們都上線開打了，群組裡有人問你：「你怎麼還沒上線？」',
+    '8A':'週五晚上跟朋友聚會，大家聊起最近在玩的遊戲，越聊越嗨。',
+    '8B':'跟好久不見的老朋友聚會，聊得很開心，有人提議：「等一下回去一起連線？」'},
+  shop:{
+    '2A':'已經連續三天睡不好，半夜頭很痛又睡不著，手上拿著手機。',
+    '2B':'生病請假在家，躺著什麼事都做不了，只能滑手機。',
+    '4A':'你最近一直忍著沒亂買東西，購物車裡放了好久的東西剛好降價，心裡冒出一個念頭：「這陣子都很節制，今天買一次應該沒關係。」',
+    '4B':'購物 App 跳出限時優惠，你心想：「我已經很久沒亂買了，只買一樣應該沒關係。」',
+    '5A':'手機跳出購物 App 的優惠通知，你還沒想清楚，手指已經點了進去。',
+    '5B':'深夜睡不著，到了以前習慣逛網拍的時間，突然很想逛一下。',
+    '6A':'跟家人或伴侶大吵一架，你把自己關進房間，順手打開購物網站。',
+    '7A':'朋友在團購群組揪團：「要不要一起買？湊免運。」',
+    '7B':'同事們都在討論剛買的東西，有人問你：「你要不要也買一個？我幫你一起下單。」',
+    '8A':'週五晚上，剛領到薪水，跟朋友在熱鬧的夜市或週年慶，大家都很嗨。',
+    '8B':'跟好久不見的朋友逛街，聊得很開心，大家手上都提著袋子。'},
+  drug:{
+    '4A':'你已經好一陣子沒用藥，心裡冒出一個念頭：「這陣子都撐過來了，用一次應該沒關係。」',
+    '4B':'你心想：「已經撐這麼久了，只用一點點應該不會怎樣，我控制得住。」',
+    '5A':'你經過以前常去用藥的地方，一看到那裡就很想要。',
+    '5B':'到了以前習慣用藥的時間，明明沒發生什麼事，卻莫名其妙地想用。',
+    // 社交題：現場的人也在用
+    '7A':'在朋友家，身邊的人都在用，有人遞給你：「一起用一點吧。」',
+    '7B':'聚會裡大家都在用，只有你沒有，有人問你：「今天不一起嗎？」',
+    '8A':'週五晚上，跟朋友在熱鬧的聚會或夜店，身邊有人在用，大家都很嗨。',
+    '8B':'跟好久不見、以前常一起用的朋友聚會，聊得很開心，有人拿出來在用。'}
+};
+
+
+/* ======= 16 題（c = 類別 1–8） ======= */
+const IMG = {1:'scene1_negative_emotion',2:'scene2_physical_discomfort',3:'scene3_positive_emotion',4:'scene4_testing_control',
+             5:'scene5_cues',6:'scene6_conflict',7:'scene7_social_pressure',8:'scene8_social_fun'};
+const Q = {
+ '1A':'一個人在家，覺得什麼事都做不好，手機一整天都沒人找你。',
+ '1B':'工作或課業上被罵了，覺得自己很沒用，回家路上越想越難過。',
+ '2A':'已經連續三天睡不好，頭很痛、全身痠，明天還要早起。',
+ '2B':'生病或受傷，身體一直不舒服，什麼事都做不了。',
+ '3A':'今天事情特別順利，收到好消息，你心情好得想犒賞自己一下。',
+ '3B':'終於完成一件很重要的事，想好好慶祝一下。',
+ '4A':'你最近一直忍著沒{base}，心裡冒出一個念頭：「這陣子都很節制，今天放縱一次應該沒關係。」',
+ '4B':'你心想：「我已經控制得很好了，只{bit}應該能停。」',
+ '5A':'你經過以前常{base}的地方，一看到那裡就很想{want}。',
+ '5B':'到了以前習慣{base}的時間，突然很想{want}。',
+ '6A':'跟家人或伴侶大吵一架，你摔門出去，一個人走在路上。',
+ '6B':'在群組或網路上跟人起衝突，越看越生氣。',
+ '7A':'朋友一直找你一起{together}：「一起啦，難得大家都在。」',
+ '7B':'大家都在{crowd}，只有你沒有，有人問你：「今天不一起嗎？」',
+ '8A':'週五晚上，剛領到薪水，跟朋友在熱鬧的聚會或夜店，大家都很嗨。',
+ '8B':'跟好久不見的老朋友聚會，聊得很開心，氣氛很好。'
+};
+// 打散的固定順序；第 9 題之後插入注意力檢查
+const ORDER = ['1A','8A','4A','6A','3A','5A','2A','7A','1B','TRIAL','5B','3B','6B','2B','8B','4B','7B'];
+
+const CATS = {1:'不愉快情緒',2:'身體不適',3:'愉快情緒',4:'內心想要嘗試的時候',5:'生活中看到有關的事物',6:'與人衝突',7:'社交壓力',8:'跟朋友相處的時候'};
+
+const TYPES = {
+ lonely:{name:'夜裡獨行型',emoji:'🌙',img:'type_lonely_walker',cats:[1,2,6],when:'難過、身體不舒服、跟人吵架的時候',
+   desc:'當心裡或身體不好受、一個人走在夜裡的時候，誘惑最容易靠近你。它承諾的是「讓痛苦先停下來」。',
+   tips:['先替情緒取名字：「我現在是難過，不是需要{want}。」','傳一則訊息給一個人，就算只是說「今天很累」。','做一分鐘的慢呼吸：吸氣四拍，吐氣六拍。','連續睡不好、長期低落時，找專業協助（心理諮商、身心科）。'],
+   band:'偵測到你獨處、情緒又起伏時，帶你做呼吸引導；需要時，通知你自己選的支持者。'},
+ party:{name:'熱鬧派對型',emoji:'🎉',img:'type_party',cats:[3,7,8],when:'開心、有人陪、有人邀的時候',
+   desc:'你的霧在最亮的地方。開心、熱鬧、有人遞過來的時候，「一次就好」最難拒絕。',
+   tips:['出門前先決定好幾點離開。','預先想好一句拒絕的話，例如「我今天要開車」。','找一個知道你在努力的朋友同行。','有些場合，不去也是一種選擇。'],
+   band:'學會你常有風險的時段（例如週末夜晚）後，在出門前給你提醒；熱鬧場合中體溫、心跳異常時，啟動安全網。'},
+ oldpath:{name:'舊路召喚型',emoji:'🛤️',img:'type_old_path',cats:[5],when:'看到、經過熟悉的東西或地方的時候',
+   desc:'熟悉的街角、氣味、時間，會把你拉回走過的那條路。這種召喚來得很快，常常在你想清楚之前。',
+   tips:['改走另一條路，避開以前常去的地方。','清掉會勾起回憶的物品。','衝動像海浪，會升起也會退下：觀察它 10 分鐘，不急著行動。'],
+   band:'學會你的風險地點後，在你接近時提醒；偵測到熟悉事物引起的生理反應時，帶你做呼吸引導。'},
+ tester:{name:'自信試探型',emoji:'🎲',img:'type_confident_tester',cats:[4],when:'覺得自己控制得住的時候',
+   desc:'撐了一段時間之後，「我應該沒問題了」本身就是一陣霧。最危險的不是那一次，而是之後那句「反正已經破功了」。',
+   tips:['把「一次就好」當成警報，而不是獎勵。','在平靜的時候寫下你想停下來的理由，放在手機裡。','就算真的失誤了，一次不代表全部失敗。'],
+   band:'接近風險地點時提醒你；當你回報失誤時，給的是支持，不是責備。'}
+};
+
+/* ======= 狀態 ======= */
+const S = {consent:null, age:null, topic:null, stopped:null, last:null, pre:{party:null,alone:null},
+           post:{party:null,alone:null}, how:null, ans:{}, trial:null, idx:0};
+const T = () => TOPICS.find(t=>t.id===S.topic) || TOPICS[TOPICS.length-1];
+const fill = s => s.replace(/\{(\w+)\}/g, (m,k)=>T()[k] ?? m);
+const qText = key => fill((VARIANT[S.topic]||{})[key] || Q[key]);
+
+/* ======= 工具 ======= */
+const $ = s => document.querySelector(s);
+function show(id){
+  document.querySelectorAll('.screen').forEach(e=>e.classList.remove('on'));
+  const el = document.getElementById(id); el.classList.add('on'); el.scrollTop=0;
+  const h = el.querySelector('h1,h2'); if(h){h.setAttribute('tabindex','-1'); h.focus({preventScroll:true});}
+}
+document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>show(b.dataset.go));
+
+function choices(host, opts, onPick, key){
+  host.innerHTML='';
+  opts.forEach(o=>{
+    const b=document.createElement('button'); b.className='choice'; b.textContent=o.label; b.type='button';
+    b.onclick=()=>{host.querySelectorAll('.choice').forEach(x=>{x.classList.remove('sel');x.setAttribute('aria-pressed','false')});
+      b.classList.add('sel'); b.setAttribute('aria-pressed','true'); onPick(o.id);};
+    host.appendChild(b);
+  });
+}
+
+function slider(host, id, label, left, right, onChange, init){
+  const d=document.createElement('div'); d.className='slider';
+  d.innerHTML=`<label for="${id}">${label}</label>
+   <div class="srow"><input type="range" min="0" max="10" step="1" value="5" id="${id}" class="untouched" aria-valuetext="尚未作答">
+   <span class="sval empty" aria-hidden="true">–</span></div>
+   <div class="ends"><span>${left}</span><span>${right}</span></div>`;
+  host.appendChild(d);
+  const r=d.querySelector('input'), v=d.querySelector('.sval');
+  const set=()=>{r.classList.remove('untouched'); v.classList.remove('empty'); v.textContent=r.value; r.setAttribute('aria-valuetext',r.value); onChange(+r.value)};
+  r.addEventListener('input',set); r.addEventListener('change',set);
+  r.addEventListener('pointerup',set); r.addEventListener('keyup',e=>{ if(e.key===' '||e.key==='Enter') set(); });
+  if(init!=null){ r.value=init; set(); }   // 回到上一題時，顯示之前的答案
+  return r;
+}
+
+/* ======= 公告 ======= */
+$('#noticeBody').innerHTML = SUBMIT_URL ? `
+  <p>這是一個設計專題。你的答案會<b>完全匿名</b>記錄，只用來研究「人在什麼情境下容易被誘惑」，幫助設計戒癮輔助手環。</p>
+  <ul><li>不需要登入，不記錄姓名、聯絡方式、IP 或位置</li><li>沒有任何題目需要寫字</li>
+  <li>未滿 18 歲的人可以玩，但答案不會被記錄</li><li>你也可以選擇「只看結果，不送出」</li></ul>`
+ : `<span class="badge">展示版</span>
+  <p>這是一個設計專題，用來研究「人在什麼情境下容易被誘惑」，幫助設計戒癮輔助手環。</p>
+  <ul><li><b>目前是展示版：你的答案只在這台裝置上計算，不會送出或儲存。</b></li>
+  <li>不需要登入，沒有任何題目需要寫字</li><li>大約 5 分鐘，16 個情境</li></ul>`;
+$('#agreeBtn').onclick=()=>{S.consent=!!SUBMIT_URL; show('age')};
+$('#noSendBtn').onclick=()=>{S.consent=false; show('age')};
+if(!SUBMIT_URL){ $('#noSendBtn').style.display='none'; }
+
+/* ======= 年齡 ======= */
+choices($('#ageChoices'), [{id:'u18',label:'未滿 18 歲'},{id:'18-29',label:'18–29 歲'},{id:'30-44',label:'30–44 歲'},{id:'45+',label:'45 歲以上'}],
+  id=>{S.age=id; buildTopics(); setTimeout(()=>show('topic'),250)});
+
+function buildTopics(){
+  const opts = TOPICS.filter(t=> S.age!=='u18' || t.id!=='drug').map(t=>({id:t.id,label:t.label}));
+  choices($('#topicChoices'), opts, id=>{S.topic=id;
+    document.querySelectorAll('.v-do').forEach(e=>e.textContent=T().vdo);
+    setTimeout(()=>show(id==='drug'?'drugextra':'pre'),250)});
+}
+choices($('#stopChoices'), [{id:'yes',label:'有'},{id:'no',label:'沒有'}], id=>S.stopped=id);
+choices($('#lastChoices'), [{id:'1m',label:'一個月內'},{id:'1y',label:'一年內'},{id:'1y+',label:'超過一年'}], id=>S.last=id);
+$('#skipExtra').onclick=()=>{S.stopped=null;S.last=null;show('pre')};
+
+/* ======= 前後拉桿 ======= */
+function pairSliders(host, obj, after){
+  host.innerHTML='';
+  slider(host, host.id+'P', '<b>熱鬧的時候</b>（聚會、跟朋友一起）', '0 次', '10 次', v=>{obj.party=v; after()});
+  slider(host, host.id+'A', '<b>一個人的時候</b>（獨處、心情不好、沒人找）', '0 次', '10 次', v=>{obj.alone=v; after()});
+}
+pairSliders($('#preSliders'), S.pre, ()=>{$('#preNext').disabled = S.pre.party===null||S.pre.alone===null});
+$('#preNext').onclick=()=>startJourney();
+
+/* ======= 旅程 ======= */
+const mist=$('#mist');
+function sceneHTML(key, i){
+  if(key==='TRIAL') return `<div class="scene trial"><div class="pic" role="img" aria-label="迷霧中的一道光"></div>
+     <div class="q"><div class="qnum">霧中的試煉</div><p class="qtext">霧裡傳來一個聲音：「請把拉桿拉到最右邊。」</p><div id="sl"></div></div></div>`;
+  const c=+key[0]; const n=ORDER.slice(0,i+1).filter(k=>k!=='TRIAL').length;
+  return `<div class="scene"><div class="pic" style="background-image:url('img/${IMG[c]}.webp')" role="img" aria-label="情境插畫"></div>
+    <div class="q"><div class="qnum">${String(n).padStart(2,'0')} / 16</div><p class="qtext">${qText(key)}</p>
+    <div id="sl"></div></div></div>`;
+}
+function renderScene(){
+  const key=ORDER[S.idx]; $('#sceneHost').innerHTML=sceneHTML(key,S.idx);
+  const fwd=$('#fwdBtn'); fwd.disabled=true; $('#journeyHint').textContent='拉動拉桿作答';
+  const label = key==='TRIAL' ? '拉到最右邊' : `這時候，你想${T().want}的程度？`;
+  const r=slider($('#sl'),'q'+S.idx,`<span class="qask">${label}</span>`,'完全不會想','一定會想',v=>{
+    if(key==='TRIAL') S.trial=v; else S.ans[key]=v;
+    fwd.disabled=false; $('#journeyHint').textContent='往下滑或按「繼續前進」';},
+    key==='TRIAL' ? S.trial : S.ans[key]);
+  $('#backBtn').disabled = S.idx===0;
+  $('#progress').style.width = ((S.idx)/ORDER.length*100)+'%';
+  // preload next
+  const nk=ORDER[S.idx+1]; if(nk && nk!=='TRIAL'){ const im=new Image(); im.src='img/'+IMG[+nk[0]]+'.webp'; }
+}
+let busy=false;
+function forward(){
+  if(busy || $('#fwdBtn').disabled) return; busy=true;
+  mist.className='mist closed';
+  setTimeout(()=>{
+    S.idx++;
+    if(S.idx>=ORDER.length){ $('#progress').style.width='100%'; show('post'); }
+    else renderScene();
+    mist.className='mist open'; setTimeout(()=>{busy=false},900);
+  }, 900);
+}
+function back(){
+  if(busy || S.idx===0) return; busy=true;
+  mist.className='mist closed';
+  setTimeout(()=>{ S.idx--; renderScene(); mist.className='mist open'; setTimeout(()=>{busy=false},900); }, 900);
+}
+function startJourney(){ S.idx=0; show('journey'); mist.className='mist closed'; renderScene(); setTimeout(()=>mist.className='mist open',150); }
+$('#fwdBtn').onclick=forward;
+$('#backBtn').onclick=back;
+$('#postBack').onclick=()=>{ S.idx=ORDER.length-1; show('journey'); renderScene(); };
+// 往下滑：作答後才有效
+let acc=0;
+$('#journey').addEventListener('wheel',e=>{ if(!$('#journey').classList.contains('on')) return;
+  if(e.target.type==='range') return; acc+=e.deltaY; if(acc>120){acc=0; forward();} if(acc<-120){acc=0; back();} },{passive:true});
+let ty=null;
+$('#journey').addEventListener('touchstart',e=>{ if(e.target.type==='range'){ty=null;return} ty=e.touches[0].clientY },{passive:true});
+$('#journey').addEventListener('touchend',e=>{ if(ty===null) return; const dy=ty-e.changedTouches[0].clientY; const sc=$('.scene');
+  if(dy>70) forward(); else if(dy<-70 && (!sc || sc.scrollTop<=0)) back(); ty=null; },{passive:true});
+document.addEventListener('keydown',e=>{ if($('#journey').classList.contains('on') && (e.key==='PageDown') ) forward(); if($('#journey').classList.contains('on') && e.key==='PageUp') back(); });
+
+/* ======= 走出迷霧前 ======= */
+const postCheck=()=>{$('#revealBtn').disabled = S.post.party===null||S.post.alone===null||!S.how};
+pairSliders($('#postSliders'), S.post, postCheck);
+choices($('#howChoices'), [{id:'concrete',label:'想到具體的經驗'},{id:'feel',label:'大概的感覺'},{id:'guess',label:'用猜的'}], id=>{S.how=id; postCheck()});
+$('#revealBtn').onclick=()=>{ const r=score(); renderResult(r); submit(r); show('result'); };
+
+/* ======= 計分 ======= */
+const avg=a=>a.reduce((x,y)=>x+y,0)/a.length;
+function score(){
+  const cat={}; for(let c=1;c<=8;c++){ cat[c]=avg([S.ans[c+'A'],S.ans[c+'B']].filter(v=>v!=null)); }
+  const t={}; for(const k in TYPES){ t[k]=avg(TYPES[k].cats.map(c=>cat[c])); }
+  const rank=Object.keys(t).sort((a,b)=>t[b]-t[a]);
+  const faint = Math.max(...Object.values(t)) < 3;
+  return {cat, t, main:rank[0], second:rank[1], faint, trialPass:S.trial===10};
+}
+
+/* ======= 雷達圖 ======= */
+function radar(cat){
+  const W=360,c=W/2,R=120,n=8; let g='',poly='',lab='';
+  for(let lv=2;lv<=10;lv+=2){ let p=''; for(let i=0;i<n;i++){const a=-Math.PI/2+i*2*Math.PI/n; p+=(c+Math.cos(a)*R*lv/10)+','+(c+Math.sin(a)*R*lv/10)+' ';}
+    g+=`<polygon points="${p}" fill="none" stroke="rgba(201,205,245,.14)"/>`; }
+  for(let i=0;i<n;i++){ const a=-Math.PI/2+i*2*Math.PI/n, v=cat[i+1]||0;
+    g+=`<line x1="${c}" y1="${c}" x2="${c+Math.cos(a)*R}" y2="${c+Math.sin(a)*R}" stroke="rgba(201,205,245,.14)"/>`;
+    poly+=(c+Math.cos(a)*R*v/10)+','+(c+Math.sin(a)*R*v/10)+' ';
+    const lx=c+Math.cos(a)*(R+26), ly=c+Math.sin(a)*(R+22);
+    lab+=`<text x="${lx}" y="${ly}" fill="#c9cdf5" font-size="12" text-anchor="${Math.abs(Math.cos(a))<.2?'middle':(Math.cos(a)>0?'start':'end')}" dominant-baseline="middle">${CATS[i+1]}</text>`; }
+  return `<svg viewBox="-40 -10 ${W+80} ${W+20}" width="100%" style="max-width:460px" role="img" aria-label="八種情境的分數雷達圖">${g}
+   <polygon points="${poly}" fill="rgba(122,107,214,.35)" stroke="#f2a65a" stroke-width="1.5"/>${lab}</svg>`;
+}
+
+/* ======= 結果頁 ======= */
+function bar(v, warm){ return `<div class="bar ${warm?'warm':''}"><i style="width:${(v||0)*10}%"></i></div>`; }
+function renderResult(r){
+  const T0=TYPES[r.main], T1=TYPES[r.second];
+  const tips=T0.tips.map(x=>`<li>${fill(x)}</li>`).join('');
+  const head = r.faint ? `
+    <div class="typehead"><div class="pic" style="background-image:url('img/cover_mobile.webp')"></div>
+     <div><div class="kicker">你的霧</div><h1 class="typename">霧很淡</h1>
+     <p>在這 16 個情境裡，你都沒有特別強烈的「想要」。這是好事，但也代表測驗沒辦法清楚說出你的誘因在哪裡。</p>
+     <p class="muted">分數最高的方向是「${T0.name}」，供你參考。</p></div></div>`
+  : `
+    <div class="typehead"><div class="pic" style="background-image:url('img/${T0.img}.webp')" role="img" aria-label="${T0.name}角色插畫"></div>
+     <div><div class="kicker">霧裡的你是</div><h1 class="typename">${T0.emoji} ${T0.name}</h1>
+     <p class="serif" style="font-size:20px;color:var(--mist)">${T0.when}</p><p>${T0.desc}</p>
+     <p class="muted">第二傾向：${T1.emoji} ${T1.name}</p></div></div>`;
+  const teamParty = r.t.party, teamAlone = r.t.lonely;
+  $('#resultBody').innerHTML = head + `
+   <div class="section"><h2>你在什麼時候最容易被誘惑</h2>
+     <div class="grid2" style="align-items:center"><div style="text-align:center">${radar(r.cat)}</div>
+     <div><p>每個角代表一種情境，越往外，代表在那種情境下你越容易「想要」。</p>
+     <p class="muted small">這是你在 8 種情境之間的<b>相對高低</b>，不是成癮的機率。這份測驗沒有經過信效度驗證，無法推算任何人會不會成癮。</p></div></div></div>
+
+   <div class="section"><h2>你以為的，和你作答的</h2>
+     <p class="muted">開頭和結尾你自己估計了「熱鬧時」和「一個人時」的比例；下面把它們和題目算出來的結果放在一起。</p>
+     <div class="cmp">
+       <span>熱鬧・出發前</span>${bar(S.pre.party)}<span class="num">${S.pre.party}</span>
+       <span>熱鬧・走出前</span>${bar(S.post.party)}<span class="num">${S.post.party}</span>
+       <span>熱鬧・題目算出</span>${bar(teamParty,1)}<span class="num">${teamParty.toFixed(1)}</span>
+       <span style="margin-top:10px">一個人・出發前</span>${bar(S.pre.alone)}<span class="num">${S.pre.alone}</span>
+       <span>一個人・走出前</span>${bar(S.post.alone)}<span class="num">${S.post.alone}</span>
+       <span>一個人・題目算出</span>${bar(teamAlone,1)}<span class="num">${teamAlone.toFixed(1)}</span>
+     </div>
+     <p class="small muted" style="margin-top:12px">自我估計是「每 10 次中幾次」，題目算出的是「想要的程度」平均（0–10），兩者單位不同，只看方向是否一致。如果差很多，代表你對自己的印象和實際反應不太一樣，這很值得留意。</p></div>
+
+   ${r.faint?'':`<div class="section"><h2>給${T0.name}的建議</h2>
+     <div class="grid2"><div class="card"><h3>你可以怎麼做</h3><ul class="tips">${tips}</ul></div>
+     <div class="card"><h3>戒癮輔助手環可以怎麼幫你</h3><p>${T0.band}</p><p class="small muted">手環是設計中的概念，功能尚未經過臨床驗證。</p></div></div></div>`}
+
+   ${S.topic==='drug'?`<div class="section"><div class="card help"><h3>需要有人陪你一起走出迷霧？</h3>
+     <p>法務部戒毒成功專線：<b class="num">0800-770-885</b>（請請你，幫幫我）<br>各縣市毒品危害防制中心也提供免費諮詢與轉介。</p></div></div>`:''}
+
+   <div class="section"><h2>霧裡的數字</h2>
+     <p class="muted small">以下是研究中的族群比例，不是你個人的機率。</p>
+     <div class="grid2">
+      <div class="card"><div class="big">約 1/3</div><p>曾經吸菸的人，之後發展成菸草依賴。</p><p class="small muted">Anthony, Warner & Kessler 1994（美國全國共病調查）</p></div>
+      <div class="card"><div class="big">約 15%</div><p>曾經喝酒的人，之後發展成酒精依賴。</p><p class="small muted">Anthony, Warner & Kessler 1994</p></div>
+      <div class="card"><div class="big">15–16%</div><p>古柯鹼使用者在初次使用後 10 年內發展成依賴；大麻約 8%。</p><p class="small muted">Wagner & Anthony 2002</p></div>
+      <div class="card"><div class="big">44.3%</div><p>台灣施用一、二級毒品者，2 年內再度施用的比例。</p><p class="small muted">法務部追蹤 2017–2019 年資料</p></div>
+     </div>
+     <p class="small muted">美國數據來自 1990 年代，依賴的定義為舊版 DSM。</p></div>
+
+   <details><summary>展開完整數據</summary>
+     <table><tr><th>情境</th><th>分數（0–10）</th></tr>
+     ${Object.keys(CATS).map(c=>`<tr><td>${CATS[c]}</td><td class="num">${r.cat[c].toFixed(1)}</td></tr>`).join('')}</table>
+     <table><tr><th>類型</th><th>分數</th></tr>${Object.keys(TYPES).map(k=>`<tr><td>${TYPES[k].name}</td><td class="num">${r.t[k].toFixed(1)}</td></tr>`).join('')}</table>
+     ${r.trialPass?'':'<p class="small muted" style="margin-top:10px">霧中的試煉沒有拉到最右邊，這次的結果可能不太準確。</p>'}
+   </details>
+
+   <div class="row" style="margin-top:28px"><button class="btn ghost" onclick="location.reload()">重新走一次</button></div>
+   <footer>這是一般性建議，不能取代專業治療。本測驗依 Marlatt 的高風險情境架構自行設計，未經信效度驗證，也不是醫療診斷。<br>
+   迷霧夜行・戒癮輔助手環設計專題 ${SUBMIT_URL?'':'・展示版，答案未送出'}</footer>`;
+}
+
+/* ======= 資料（展示版不送出） ======= */
+function payload(r){
+  return {id:(crypto.randomUUID?crypto.randomUUID():String(Math.random()).slice(2)), date:new Date().toISOString().slice(0,10),
+    age:S.age, topic:S.topic, stopped:S.stopped, last:S.last, pre:S.pre, items:S.ans, trialPass:r.trialPass,
+    post:S.post, how:S.how, cat:r.cat, main:r.main, second:r.second};
+}
+function submit(r){
+  if(!SUBMIT_URL || !S.consent || S.age==='u18') return;
+  try{ fetch(SUBMIT_URL,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload(r))}).catch(()=>{}); }catch(e){}
+}
+
+/* ======= 星空 ======= */
+(function(){ const cv=$('#stars'), x=cv.getContext('2d'); let st=[];
+  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function size(){ cv.width=innerWidth*devicePixelRatio; cv.height=innerHeight*devicePixelRatio;
+    st=Array.from({length:Math.round(innerWidth*innerHeight/9000)},()=>({x:Math.random()*cv.width,y:Math.random()*cv.height,r:Math.random()*1.3+.2,p:Math.random()*6.28})); }
+  function draw(t){ x.clearRect(0,0,cv.width,cv.height);
+    st.forEach(s=>{ const a=reduce?.6:.35+.35*Math.sin(t/1400+s.p); x.fillStyle=`rgba(220,224,255,${a})`; x.beginPath(); x.arc(s.x,s.y,s.r*devicePixelRatio,0,6.28); x.fill(); });
+    if(!reduce) requestAnimationFrame(draw); }
+  addEventListener('resize',size); size(); requestAnimationFrame(draw); })();
+</script>
+</body>
+</html>
